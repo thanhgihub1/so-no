@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#166534">
+<title>Sổ Nợ</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial,
+         sans-serif; background: #f0fdf4; color: #14532d; }
+  header { background: #166534; color: #fff; padding: 14px 16px 12px;
+           position: sticky; top: 0; z-index: 5; }
+  header h1 { margin: 0; font-size: 20px; }
+  header .tong { margin-top: 4px; font-size: 14px; opacity: .95; }
+  header .tong b { font-size: 19px; }
+  .sync { font-size: 11px; opacity: .85; margin-top: 2px; }
+
+  .fab2 { position: fixed; bottom: 16px; left: 12px; right: 12px;
+          display: flex; gap: 10px; z-index: 10; }
+  .fab2 button { flex: 1; padding: 15px 0; border: 0; border-radius: 14px;
+                 font-size: 16px; font-weight: 700; color: #fff;
+                 box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+  .b-no  { background: #dc2626; }
+  .b-tra { background: #16a34a; }
+
+  .search { padding: 10px 14px 4px; }
+  .search input { width: 100%; padding: 11px 14px; border: 2px solid #bbf7d0;
+                  border-radius: 12px; font-size: 16px; }
+  .list { padding: 6px 14px 90px; }
+  .card { background: #fff; border-radius: 14px; padding: 12px 14px;
+          margin: 8px 0; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+          display: flex; justify-content: space-between; align-items: center; }
+  .card .name { font-size: 17px; font-weight: 700; }
+  .card .sub  { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .card .amt  { font-size: 18px; font-weight: 800; color: #b91c1c;
+                white-space: nowrap; }
+  .card.done  { opacity: .55; }
+  .card.done .amt { color: #16a34a; }
+  .empty { text-align: center; color: #6b7280; padding: 40px 20px;
+           font-size: 15px; }
+
+  /* form thêm */
+  .ov { position: fixed; inset: 0; background: rgba(0,0,0,.45);
+        display: none; z-index: 20; align-items: flex-end; }
+  .ov.on { display: flex; }
+  .sheet { background: #fff; width: 100%; border-radius: 18px 18px 0 0;
+           padding: 18px 16px 26px; }
+  .sheet h2 { margin: 0 0 12px; font-size: 18px; }
+  .sheet label { display: block; font-size: 13px; font-weight: 600;
+                 color: #374151; margin: 10px 0 4px; }
+  .sheet input, .sheet select { width: 100%; padding: 12px; font-size: 17px;
+                 border: 2px solid #d1d5db; border-radius: 10px; }
+  .sheet .row2 { display: flex; gap: 10px; margin-top: 16px; }
+  .sheet .row2 button { flex: 1; padding: 14px 0; border: 0;
+                        border-radius: 12px; font-size: 16px; font-weight: 700; }
+  .b-save { background: #166534; color: #fff; }
+  .b-huy  { background: #e5e7eb; color: #374151; }
+  .sug { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .sug span { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 10px;
+              border-radius: 999px; font-size: 13px; }
+
+  /* chi tiết 1 người */
+  .dt .sheet { max-height: 82vh; overflow: auto; }
+  .ls { margin-top: 8px; }
+  .ls .it { display: flex; justify-content: space-between; padding: 9px 0;
+            border-bottom: 1px dashed #e5e7eb; font-size: 15px; }
+  .ls .no  { color: #b91c1c; font-weight: 700; }
+  .ls .tra { color: #16a34a; font-weight: 700; }
+  .ls .mt  { font-size: 11px; color: #9ca3af; }
+  .menurow { display: flex; gap: 8px; margin-top: 14px; }
+  .menurow button { flex: 1; padding: 11px 0; border-radius: 10px; border: 0;
+                    font-size: 14px; font-weight: 600; }
+  .b-del2 { background: #fee2e2; color: #b91c1c; }
+  .b-done { background: #dcfce7; color: #166534; }
+  .b-back { background: #f3f4f6; color: #374151; }
+  .tools { display: flex; gap: 8px; padding: 0 14px 8px; }
+  .tools button { flex: 1; padding: 8px; font-size: 12px; border-radius: 8px;
+                  border: 1px solid #d1d5db; background: #fff; color: #374151; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📒 Sổ Nợ</h1>
+  <div class="tong">Đang nợ lại: <b id="tong">0 ₫</b>
+    &nbsp;·&nbsp; <span id="nguoi">0</span> người</div>
+  <div class="sync" id="sync">💾 Lưu trên máy — chưa đồng bộ</div>
+</header>
+
+<div class="search">
+  <input id="q" placeholder="🔍 Tìm tên người nợ…" oninput="render()">
+</div>
+<div class="tools">
+  <button onclick="xemHet()" id="bHet">📋 Xem cả đã trả hết</button>
+  <button onclick="xuatCSV()">⬇️ Tải file backup</button>
+  <button onclick="caiSync()">⚙️ Đồng bộ</button>
+  <button onclick="taiVe()">📥 Tải về</button>
+</div>
+<div class="list" id="list"></div>
+
+<div class="fab2">
+  <button class="b-no"  onclick="moForm('no')">✚ Cho nợ</button>
+  <button class="b-tra" onclick="moForm('tra')">💰 Thu nợ</button>
+</div>
+
+<!-- form thêm -->
+<div class="ov" id="ovForm" onclick="if(event.target===this)dong()">
+  <div class="sheet">
+    <h2 id="fTitle">Cho nợ</h2>
+    <label>Ai?</label>
+    <input id="fTen" placeholder="Tên người nợ" autocomplete="off">
+    <div class="sug" id="fSug"></div>
+    <label>Số tiền</label>
+    <input id="fTien" type="number" inputmode="numeric" placeholder="500000">
+    <div class="sug">
+      <span onclick="dienTien(100000)">100k</span>
+      <span onclick="dienTien(200000)">200k</span>
+      <span onclick="dienTien(500000)">500k</span>
+      <span onclick="dienTien(1000000)">1tr</span>
+      <span onclick="dienTien(2000000)">2tr</span>
+      <span onclick="dienTien(5000000)">5tr</span>
+    </div>
+    <label>Nội dung / ghi chú</label>
+    <input id="fGc" placeholder="VD: nợ tiền gạo, mượn tiền…">
+    <label>Ngày</label>
+    <input id="fNgay" type="date">
+    <div class="row2">
+      <button class="b-huy" onclick="dong()">Hủy</button>
+      <button class="b-save" onclick="luu()">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<!-- chi tiết 1 người -->
+<div class="ov dt" id="ovDt" onclick="if(event.target===this)dong2()">
+  <div class="sheet">
+    <h2 id="dTen"></h2>
+    <div style="font-size:15px">Còn nợ: <b id="dCon"
+        style="color:#b91c1c"></b> · Tổng đã vay: <span id="dVay"></span>
+        · Đã trả: <span id="dTra"></span></div>
+    <div class="ls" id="dLs"></div>
+    <div class="menurow">
+      <button class="b-back" onclick="dong2()">← Quay lại</button>
+      <button class="b-done" id="dDone" onclick="xongNo()">✓ Trả hết</button>
+      <button class="b-del2" onclick="xoaNguoi()">🗑 Xóa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── dữ liệu: mảng giao dịch, lưu localStorage + hàng chờ sync ─
+const KEY = 'sono_v1', PKEY = 'sono_pending', SKEY = 'sono_sync_url';
+let DB = [];
+try { DB = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) {}
+let PENDING = new Set(
+  JSON.parse(localStorage.getItem(PKEY) || '[]'));
+const save = () => {
+  localStorage.setItem(KEY, JSON.stringify(DB));
+  localStorage.setItem(PKEY, JSON.stringify([...PENDING]));
+  upSync(); trySync();
+};
+const pend = id => PENDING.add(id);
+
+const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
+const qEl = document.getElementById('q');
+const norm = s => (s || '').toLowerCase()
+  .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
+const nkey = s => norm(s).replace(/\s+/g, '');
+let xemHetFlg = false;
+
+// xóa mềm: bản ghi đánh dấu xoa vẫn giữ trong DB để báo server,
+// nhưng không hiển thị
+const LIVE = () => DB.filter(t => !t.xoa);
+
+// gom theo người: {ten, vay, tra, items[]}
+function nhom() {
+  const m = {};
+  LIVE().forEach(t => {
+    const k = nkey(t.ten);
+    if (!m[k]) m[k] = {ten: t.ten, vay: 0, tra: 0, items: [], k};
+    m[k].items.push(t);
+    if (t.loai === 'no') m[k].vay += t.tien; else m[k].tra += t.tien;
+    m[k].last = t.ngay + ' ' + (t.gio || '');
+  });
+  Object.values(m).forEach(p => {
+    p.con = p.vay - p.tra;
+    p.items.sort((a, b) => (b.ngay + b.gio).localeCompare(a.ngay + a.gio));
+  });
+  return Object.values(m)
+    .sort((a, b) => (b.con - a.con) || a.ten.localeCompare(b.ten));
+}
+
+function render() {
+  const all = nhom();
+  const q = norm(qEl.value);
+  const l = all.filter(p => (xemHetFlg || p.con > 0)
+                  && (!q || norm(p.ten).includes(q)));
+  const tong = all.reduce((s, p) => s + Math.max(0, p.con), 0);
+  const nguoi = all.filter(p => p.con > 0).length;
+  document.getElementById('tong').textContent = fmt(tong);
+  document.getElementById('nguoi').textContent = nguoi;
+  document.getElementById('bHet').textContent = xemHetFlg
+    ? '📋 Chỉ xem đang nợ' : '📋 Xem cả đã trả hết';
+  const el = document.getElementById('list');
+  if (!l.length) {
+    el.innerHTML = '<div class="empty">Chưa có khoản nợ nào.<br>'
+      + 'Bấm <b>✚ Cho nợ</b> bên dưới để bắt đầu.</div>';
+    return;
+  }
+  el.innerHTML = l.map(p => `
+    <div class="card ${p.con <= 0 ? 'done' : ''}" onclick="moDt('${p.k}')">
+      <div>
+        <div class="name">${esc(p.ten)}</div>
+        <div class="sub">${p.items.length} lần · gần nhất
+          ${esc((p.last || '').slice(0, 10))}</div>
+      </div>
+      <div class="amt">${p.con > 0 ? fmt(p.con) : '✓ hết'}</div>
+    </div>`).join('');
+}
+
+const esc = s => String(s ?? '').replace(/[&<>"]/g,
+  c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+// ── form ─────────────────────────────────────────────────────
+let LOAI = 'no', CUR = null;
+function moForm(loai) {
+  LOAI = loai;
+  document.getElementById('fTitle').textContent =
+    loai === 'no' ? '✚ Cho nợ (họ nợ mình)' : '💰 Thu nợ (họ trả)';
+  const f = document.getElementById('fNgay');
+  f.value = new Date().toISOString().slice(0, 10);
+  // gợi ý tên cũ
+  const sug = nhom().map(p => p.ten);
+  document.getElementById('fSug').innerHTML = sug.map(t =>
+    `<span onclick="document.getElementById('fTen').value='${esc(t)}'">
+       ${esc(t)}</span>`).join('');
+  document.getElementById('ovForm').classList.add('on');
+  setTimeout(() => document.getElementById('fTen').focus(), 60);
+}
+function dienTien(n) {
+  const f = document.getElementById('fTien');
+  f.value = (parseInt(f.value) || 0) + n;
+}
+function dong() {
+  document.getElementById('ovForm').classList.remove('on');
+  ['fTen', 'fTien', 'fGc'].forEach(id =>
+    document.getElementById(id).value = '');
+}
+function luu() {
+  const ten = document.getElementById('fTen').value.trim();
+  const tien = parseInt(document.getElementById('fTien').value) || 0;
+  if (!ten || tien <= 0) { alert('Nhập tên và số tiền nhé!'); return; }
+  const now = new Date();
+  const id = Date.now();
+  DB.push({
+    id,
+    ten, tien,
+    loai: LOAI,
+    gc: document.getElementById('fGc').value.trim(),
+    ngay: document.getElementById('fNgay').value
+          || now.toISOString().slice(0, 10),
+    gio: now.toTimeString().slice(0, 5),
+  });
+  pend(id); save(); dong(); render();
+}
+
+// ── chi tiết 1 người ─────────────────────────────────────────
+function moDt(k) {
+  CUR = k;
+  const p = nhom().find(x => x.k === k);
+  if (!p) return;
+  document.getElementById('dTen').textContent = p.ten;
+  document.getElementById('dCon').textContent = fmt(Math.max(0, p.con));
+  document.getElementById('dVay').textContent = fmt(p.vay);
+  document.getElementById('dTra').textContent = fmt(p.tra);
+  document.getElementById('dDone').style.display = p.con > 0 ? '' : 'none';
+  document.getElementById('dLs').innerHTML = p.items.map(t => `
+    <div class="it">
+      <div>${t.loai === 'no'
+          ? '<span class="no">− ' + fmt(t.tien) + '</span> <span class="mt">cho nợ</span>'
+          : '<span class="tra">+ ' + fmt(t.tien) + '</span> <span class="mt">trả</span>'}
+        ${t.gc ? '<div class="mt">' + esc(t.gc) + '</div>' : ''}
+        <div class="mt">${esc(t.ngay)} ${esc(t.gio || '')}</div>
+      </div>
+      <div><button onclick="xoaGd(${t.id})" style="border:0;background:none;
+          color:#dc2626;font-size:16px">✕</button></div>
+    </div>`).join('') || '<div class="empty">Chưa có giao dịch</div>';
+  document.getElementById('ovDt').classList.add('on');
+}
+function dong2() { document.getElementById('ovDt').classList.remove('on'); }
+function xoaGd(id) {
+  if (!confirm('Xóa giao dịch này?')) return;
+  const t = DB.find(x => x.id === id);
+  DB = DB.filter(x => x.id !== id);
+  if (t) {
+    t.xoa = 1; DB.push(t); pend(t.id);   // báo server xóa luôn
+  }
+  save(); moDt(CUR); render();
+}
+function xongNo() {
+  const p = nhom().find(x => x.k === CUR);
+  if (!p || p.con <= 0) return;
+  if (!confirm(`Ghi \"${p.ten} trả hết ${fmt(p.con)}\"?`)) return;
+  const now = new Date();
+  const id = Date.now();
+  DB.push({id, ten: p.ten, tien: p.con, loai: 'tra',
+           gc: 'trả hết nợ', ngay: now.toISOString().slice(0, 10),
+           gio: now.toTimeString().slice(0, 5)});
+  pend(id); save(); dong2(); render();
+}
+function xoaNguoi() {
+  const p = nhom().find(x => x.k === CUR);
+  if (!p) return;
+  if (!confirm(`XÓA HẾT giao dịch của "${p.ten}"? (không lấy lại được)`))
+    return;
+  DB.forEach(t => {
+    if (nkey(t.ten) === CUR) { t.xoa = 1; pend(t.id); }
+  });
+  save(); dong2(); render();
+}
+
+// ── công cụ ──────────────────────────────────────────────────
+function xemHet() { xemHetFlg = !xemHetFlg; render(); }
+function xuatCSV() {
+  const rows = [['Ngày', 'Giờ', 'Tên', 'Loại', 'Số tiền', 'Ghi chú']]
+    .concat(LIVE().map(t => [t.ngay, t.gio, t.ten,
+      t.loai === 'no' ? 'cho nợ' : 'trả', t.tien, t.gc || '']));
+  const csv = '﻿' + rows.map(r =>
+    r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(','))
+    .join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],
+    {type: 'text/csv;charset=utf-8'}));
+  a.download = 'so_no_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+}
+
+// ── đồng bộ Google Sheets (Apps Script) ─────────────────────
+const syncUrl = () => localStorage.getItem(SKEY) || '';
+function caiSync() {
+  const cur = syncUrl();
+  const u = prompt(
+    'Dán link Apps Script đồng bộ (lấy từ Google Sheets của mẹ):',
+    cur);
+  if (u === null) return;
+  localStorage.setItem(SKEY, u.trim());
+  PENDING = new Set(DB.map(t => t.id));   // đẩy toàn bộ lên lần đầu
+  save(); trySync();
+}
+
+async function trySync() {
+  const u = syncUrl();
+  if (!u || !navigator.onLine || !PENDING.size) { upSync(); return; }
+  const rows = [...PENDING]
+    .map(id => DB.find(t => t.id === id)).filter(Boolean);
+  try {
+    await fetch(u, {
+      method: 'POST', redirect: 'follow',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({rows}),
+    });
+    rows.forEach(t => PENDING.delete(t.id));
+    localStorage.setItem(PKEY, JSON.stringify([...PENDING]));
+  } catch (e) { /* mạng lỗi — giữ hàng chờ, lần sau gửi lại */ }
+  upSync();
+}
+
+async function taiVe() {
+  // kéo dữ liệu trên Sheet về (dùng khi cài máy mới / mất dữ liệu)
+  const u = syncUrl();
+  if (!u) { alert('Chưa cài link đồng bộ — bấm ⚙️ Đồng bộ trước');
+            return; }
+  try {
+    const r = await fetch(u + '?all=1');
+    const j = await r.json();
+    const byId = new Map(DB.map(t => [t.id, t]));
+    let n = 0;
+    (j.rows || []).forEach(t => {
+      if (!byId.has(t.id)) { DB.push(t); n++; }
+    });
+    save(); render();
+    alert(n ? 'Đã tải ' + n + ' ghi từ Sheet về.'
+            : 'Không có ghi mới nào trên Sheet.');
+  } catch (e) { alert('Không tải được — kiểm tra mạng/link.'); }
+}
+
+// trạng thái mạng + đồng bộ
+function upSync() {
+  const el = document.getElementById('sync');
+  if (!navigator.onLine) {
+    el.textContent = '💾 Lưu trên máy — đang MẤT MẠNG, vẫn ghi được';
+  } else if (!syncUrl()) {
+    el.textContent = '💾 Lưu trên máy — chưa cài đồng bộ';
+  } else {
+    el.textContent = PENDING.size
+      ? '⏳ ' + PENDING.size + ' mục đang chờ đồng bộ…'
+      : '☁️ Đã đồng bộ lên Google Sheets';
+  }
+}
+window.addEventListener('online', () => { upSync(); trySync(); });
+window.addEventListener('offline', upSync);
+upSync(); trySync(); render();
+
+// PWA offline
+if ('serviceWorker' in navigator)
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>

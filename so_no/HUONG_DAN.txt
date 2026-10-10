@@ -1,0 +1,69 @@
+SỔ NỢ — CÀI APP THẬT LÊN ĐIỆN THOẠI MẸ (làm 1 lần)
+=====================================================
+
+App đã xong gồm: index.html, manifest.webmanifest, sw.js, icon-512.png,
+Code.gs (điểm đồng bộ Google Sheets).
+
+Dùng máy tính của BẠN làm 3 bước dưới (~15 phút).
+
+──────────────────────────────────────────────────
+BƯỚC 1 — Đẩy app lên GitHub Pages (link cố định vĩnh viễn)
+──────────────────────────────────────────────────
+1. Vào https://github.com/new → tạo repo tên "so-no" (public).
+2. Mở repo → "Add file" → "Upload files" → kéo thả TOÀN BỘ
+   thư mục so_no (index.html, manifest, sw.js, icon-512.png;
+   KHÔNG cần upload Code.gs và file này) → Commit.
+3. Vào Settings → Pages → Source: "Deploy from a branch"
+   → Branch: main / (root) → Save.
+4. Chờ ~1 phút, link app sẽ là:
+      https://<tên-tài-khoản>.github.io/so-no/
+   Mở link thử trên trình duyệt — phải thấy giao diện Sổ Nợ.
+
+──────────────────────────────────────────────────
+BƯỚC 2 — Tạo điểm đồng bộ trên Google Sheets của mẹ
+──────────────────────────────────────────────────
+1. Đăng nhập Google của MẸ → vào https://sheets.new
+   → đặt tên file "SO NO".
+2. Menu Tiện ích mở rộng → Apps Script.
+3. Xóa code mẫu, dán TOÀN BỘ file Code.gs → Save (💾).
+4. Bấm "Triển khai" (Deploy) → "Bản triển khai mới" (New deployment)
+   → loại: Ứng dụng web (Web app)
+   - Thực thi dưới danh nghĩa: Tôi (Me)
+   - Ai có quyền truy cập: Bất kỳ ai (Anyone)
+   → Triển khai → copy link dạng https://script.google.com/…/exec
+   (lần đầu sẽ xin quyền — chọn tài khoản, bấm Nâng cao →
+    Đi tới … (không an toàn) → Cho phép — đây là script của
+    chính mình nên yên tâm).
+5. GIỮ LINK /exec NÀY LẠI — đây là "ống" nối app và Sheet.
+
+──────────────────────────────────────────────────
+BƯỚC 3 — Đóng gói file .apk cài cho mẹ (không cần link nữa)
+──────────────────────────────────────────────────
+1. Trên máy tính vào https://www.pwabuilder.com
+2. Dán link GitHub Pages ở Bước 1 → Analyze/Start.
+3. Chọn phần Android → "Package for Android" (TWA)
+   → để mặc định → tải file .apk về.
+   (Nếu nó hỏi signing key → chọn "new" để nó tự tạo.)
+4. Gửi file .apk qua Zalo sang điện thoại mẹ → mở file →
+   "Cài đặt" (cho phép cài từ nguồn ngoài nếu nó hỏi).
+   → Icon 📒 Sổ Nợ trên màn hình, mở là dùng — KHÔNG CẦN
+   MẠNG, KHÔNG CẦN LINK NÀO NỮA.
+
+   Cách nhanh hơn nếu lười build APK: chỉ cần cho mẹ mở link
+   GitHub Pages 1 lần → Chrome ⋮ → "Cài đặt ứng dụng".
+   Vẫn ra icon app y hệt, link Pages thì cố định mãi mãi.
+
+──────────────────────────────────────────────────
+BƯỚC 4 — Nối app với Sheet (làm 1 lần trên điện thoại mẹ)
+──────────────────────────────────────────────────
+1. Mở app → bấm "⚙️ Đồng bộ" → dán link /exec ở Bước 2 → OK.
+2. Toàn bộ dữ liệu đang có sẽ tự đẩy lên Sheet "SO_NO".
+   Từ nay: ghi không cần mạng; có mạng là tự đồng bộ.
+3. Kiểm tra: mở file "SO NO" trên Google Sheets sẽ thấy
+   sheet SO_NO có dữ liệu — mẹ có thể xem trực tiếp luôn.
+
+SAU NÀY:
+- Mất máy/cài lại: cài app → ⚙️ Đồng bộ (dán lại link /exec)
+  → "📥 Tải về" → toàn bộ dữ liệu kéo về lại.
+- Nút "⬇️ Tải file backup" = file Excel/CSV giữ thêm 1 lớp
+  bảo hiểm, gửi Zalo cất đi.
