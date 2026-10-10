@@ -2,196 +2,431 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#166534">
-<title>Sổ Nợ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0f5132">
 <link rel="manifest" href="manifest.webmanifest">
+<title>Sổ Nợ</title>
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial,
-         sans-serif; background: #f0fdf4; color: #14532d; }
-  header { background: #166534; color: #fff; padding: 14px 16px 12px;
-           position: sticky; top: 0; z-index: 5; }
-  header h1 { margin: 0; font-size: 20px; }
-  header .tong { margin-top: 4px; font-size: 14px; opacity: .95; }
-  header .tong b { font-size: 19px; }
-  .sync { font-size: 11px; opacity: .85; margin-top: 2px; }
-
-  .fab2 { position: fixed; bottom: 16px; left: 12px; right: 12px;
-          display: flex; gap: 10px; z-index: 10; }
-  .fab2 button { flex: 1; padding: 15px 0; border: 0; border-radius: 14px;
-                 font-size: 16px; font-weight: 700; color: #fff;
-                 box-shadow: 0 4px 12px rgba(0,0,0,.25); }
-  .b-no  { background: #dc2626; }
-  .b-tra { background: #16a34a; }
-
-  .search { padding: 10px 14px 4px; }
-  .search input { width: 100%; padding: 11px 14px; border: 2px solid #bbf7d0;
-                  border-radius: 12px; font-size: 16px; }
-  .list { padding: 6px 14px 90px; }
-  .card { background: #fff; border-radius: 14px; padding: 12px 14px;
-          margin: 8px 0; box-shadow: 0 1px 4px rgba(0,0,0,.08);
-          display: flex; justify-content: space-between; align-items: center; }
-  .card .name { font-size: 17px; font-weight: 700; }
-  .card .sub  { font-size: 12px; color: #6b7280; margin-top: 2px; }
-  .card .amt  { font-size: 18px; font-weight: 800; color: #b91c1c;
-                white-space: nowrap; }
-  .card.done  { opacity: .55; }
-  .card.done .amt { color: #16a34a; }
-  .empty { text-align: center; color: #6b7280; padding: 40px 20px;
+  * { box-sizing: border-box; margin: 0; font-family: system-ui, sans-serif; }
+  body { background: #f3f1ea; color: #222; min-height: 100vh;
+         padding-bottom: 120px; font-size: 17px; }
+  .hd { background: #0f5132; color: #fff; padding: 14px 16px 12px;
+        position: sticky; top: 0; z-index: 10; }
+  .hd h1 { font-size: 21px; }
+  .hd .tong { font-size: 32px; font-weight: 800; margin-top: 4px; }
+  .hd .sub { opacity: .85; font-size: 14px; }
+  .hd .sync { font-size: 12px; opacity: .8; margin-top: 4px; }
+  .hd .lock { position: absolute; right: 14px; top: 14px;
+              background: #ffffff22; border: 0; color: #fff;
+              padding: 8px 10px; border-radius: 10px; font-size: 18px; }
+  .qhan { background: #8b1a1a; color: #fff; display: inline-block;
+          padding: 3px 10px; border-radius: 20px; font-size: 13px;
+          font-weight: 700; margin-top: 5px; }
+  .search { padding: 10px 14px 4px; display: flex; gap: 8px; }
+  .search input { flex: 1; padding: 13px 14px; font-size: 17px;
+                  border-radius: 12px; border: 1px solid #ccc;
+                  background: #fff; }
+  .search select { padding: 0 8px; font-size: 15px; border-radius: 12px;
+                   border: 1px solid #ccc; background: #fff; }
+  .tools { display: flex; gap: 8px; padding: 8px 14px 6px; }
+  .tools button { flex: 1; padding: 10px; font-size: 14px;
+                  border-radius: 10px; border: 1px solid #d8cfbf;
+                  background: #fff; }
+  /* bảng tổng quan */
+  .tq { margin: 0 14px; background: #fff; border-radius: 14px;
+        padding: 12px 16px; display: none; box-shadow: 0 1px 4px #0001; }
+  .tq.on { display: block; }
+  .tq h3 { font-size: 16px; margin-bottom: 8px; color: #0f5132; }
+  .tq .r { display: flex; justify-content: space-between;
+           padding: 6px 0; border-bottom: 1px dashed #eee;
            font-size: 15px; }
-
-  /* form thêm */
-  .ov { position: fixed; inset: 0; background: rgba(0,0,0,.45);
-        display: none; z-index: 20; align-items: flex-end; }
-  .ov.on { display: flex; }
+  .tq .r b { font-size: 17px; }
+  .tq .top { font-size: 14px; color: #444; padding-top: 6px; }
+  .list { padding: 0 14px; }
+  .card { background: #fff; border-radius: 14px; padding: 14px 16px;
+          margin-top: 10px; box-shadow: 0 1px 4px #0001; }
+  .card .n { font-size: 20px; font-weight: 800; }
+  .card .n .sdt { font-size: 14px; color: #666; font-weight: 400; }
+  .card .c { font-size: 24px; font-weight: 800; color: #b3261e; }
+  .card .meta { font-size: 14px; color: #444; margin-top: 3px; }
+  .card .badge { font-size: 12px; padding: 2px 9px; border-radius: 10px;
+                 font-weight: 700; }
+  .b-qh { background: #8b1a1a; color: #fff; }
+  .b-ok { background: #d3f8d3; color: #1a7f37; }
+  .b-lai { background: #fff3cd; color: #7a5800; }
+  .empty { text-align: center; color: #888; padding: 50px 20px;
+           font-size: 17px; }
+  .fab2 { position: fixed; left: 0; right: 0; bottom: 0;
+          display: flex; gap: 12px; padding: 12px 14px 20px;
+          background: #f3f1eaee; }
+  .fab2 button { flex: 1; padding: 18px; font-size: 20px;
+                 font-weight: 800; border: 0; border-radius: 16px;
+                 color: #fff; }
+  .b-no { background: #b3261e; }
+  .b-tra { background: #1a7f37; }
+  .ov { position: fixed; inset: 0; background: #0008; z-index: 30;
+        display: none; }
+  .ov.on { display: flex; align-items: flex-end; }
   .sheet { background: #fff; width: 100%; border-radius: 18px 18px 0 0;
-           padding: 18px 16px 26px; }
-  .sheet h2 { margin: 0 0 12px; font-size: 18px; }
-  .sheet label { display: block; font-size: 13px; font-weight: 600;
-                 color: #374151; margin: 10px 0 4px; }
-  .sheet input, .sheet select { width: 100%; padding: 12px; font-size: 17px;
-                 border: 2px solid #d1d5db; border-radius: 10px; }
-  .sheet .row2 { display: flex; gap: 10px; margin-top: 16px; }
-  .sheet .row2 button { flex: 1; padding: 14px 0; border: 0;
-                        border-radius: 12px; font-size: 16px; font-weight: 700; }
-  .b-save { background: #166534; color: #fff; }
-  .b-huy  { background: #e5e7eb; color: #374151; }
-  .sug { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-  .sug span { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 10px;
-              border-radius: 999px; font-size: 13px; }
-
-  /* chi tiết 1 người */
-  .dt .sheet { max-height: 82vh; overflow: auto; }
-  .ls { margin-top: 8px; }
-  .ls .it { display: flex; justify-content: space-between; padding: 9px 0;
-            border-bottom: 1px dashed #e5e7eb; font-size: 15px; }
-  .ls .no  { color: #b91c1c; font-weight: 700; }
-  .ls .tra { color: #16a34a; font-weight: 700; }
-  .ls .mt  { font-size: 11px; color: #9ca3af; }
-  .menurow { display: flex; gap: 8px; margin-top: 14px; }
-  .menurow button { flex: 1; padding: 11px 0; border-radius: 10px; border: 0;
-                    font-size: 14px; font-weight: 600; }
-  .b-del2 { background: #fee2e2; color: #b91c1c; }
-  .b-done { background: #dcfce7; color: #166534; }
-  .b-back { background: #f3f4f6; color: #374151; }
-  .tools { display: flex; gap: 8px; padding: 0 14px 8px; }
-  .tools button { flex: 1; padding: 8px; font-size: 12px; border-radius: 8px;
-                  border: 1px solid #d1d5db; background: #fff; color: #374151; }
+           padding: 18px 18px 24px; max-height: 90vh; overflow: auto; }
+  .sheet h2 { font-size: 21px; margin-bottom: 12px; }
+  .sheet label { font-size: 15px; font-weight: 600; color: #444;
+                 display: block; margin: 10px 0 4px; }
+  .sheet input { width: 100%; padding: 13px; font-size: 18px;
+                 border: 1.5px solid #ccc; border-radius: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip { padding: 10px 13px; border-radius: 20px;
+          border: 1.5px solid #bbb; background: #fff;
+          font-size: 15px; font-weight: 700; }
+  .chip.on { background: #0f5132; color: #fff; border-color: #0f5132; }
+  .sheet .row { display: flex; gap: 10px; }
+  .sheet .row > div { flex: 1; }
+  .btns { display: flex; gap: 10px; margin-top: 18px; }
+  .btns button { flex: 1; padding: 15px; font-size: 18px;
+                 font-weight: 700; border: 0; border-radius: 12px; }
+  .b-xam { background: #e4e0d8; }
+  .b-luu { background: #0f5132; color: #fff; }
+  .dt-big { font-size: 30px; font-weight: 800; color: #b3261e;
+            margin: 4px 0 2px; }
+  .dt-line { font-size: 15px; color: #444; }
+  .tx { display: flex; justify-content: space-between; gap: 8px;
+        align-items: center; padding: 10px 4px;
+        border-bottom: 1px dashed #ddd; }
+  .tx .m { font-weight: 700; font-size: 17px; }
+  .tx .m.no { color: #b3261e; }
+  .tx .m.tra { color: #1a7f37; }
+  .tx small { color: #666; font-size: 13px; display: block; }
+  .tx .ops button { border: 0; background: none; font-size: 18px;
+                    padding: 4px 6px; }
+  .toast { position: fixed; left: 50%; bottom: 110px;
+           transform: translateX(-50%); background: #222;
+           color: #fff; padding: 12px 20px; border-radius: 24px;
+           font-size: 16px; display: none; z-index: 90; max-width: 92vw; }
+  .pinov { position: fixed; inset: 0; background: #0f5132; z-index: 99;
+           display: none; flex-direction: column; align-items: center;
+           justify-content: center; color: #fff; }
+  .pinov.on { display: flex; }
+  .pinov .dot { font-size: 40px; letter-spacing: 16px; min-height: 60px; }
+  .pad { display: grid; grid-template-columns: repeat(3, 76px);
+         gap: 14px; margin-top: 20px; }
+  .pad button { padding: 20px; font-size: 26px; font-weight: 700;
+                border-radius: 50%; border: 0; background: #ffffff22;
+                color: #fff; }
 </style>
 </head>
 <body>
 
-<header>
+<div class="hd">
   <h1>📒 Sổ Nợ</h1>
-  <div class="tong">Đang nợ lại: <b id="tong">0 ₫</b>
-    &nbsp;·&nbsp; <span id="nguoi">0</span> người</div>
-  <div class="sync" id="sync">💾 Lưu trên máy — chưa đồng bộ</div>
-</header>
+  <div class="tong" id="tong">0 ₫</div>
+  <div class="sub"><span id="nguoi">0</span> người đang nợ
+    <span id="qhan"></span></div>
+  <div class="sync" id="sync"></div>
+  <button class="lock" onclick="khoaLai()" id="bLock"
+          style="display:none">🔒</button>
+</div>
 
 <div class="search">
   <input id="q" placeholder="🔍 Tìm tên người nợ…" oninput="render()">
+  <select id="sx" onchange="render()">
+    <option value="qh">⏰ Quá hạn trước</option>
+    <option value="con">💰 Nợ nhiều trước</option>
+    <option value="new">🕐 Mới ghi trước</option>
+    <option value="ten">🔤 Theo tên A-Z</option>
+  </select>
 </div>
 <div class="tools">
+  <button onclick="tqHien()">📊 Tổng quan</button>
   <button onclick="xemHet()" id="bHet">📋 Xem cả đã trả hết</button>
-  <button onclick="xuatCSV()">⬇️ Tải file backup</button>
-  <button onclick="caiSync()">⚙️ Đồng bộ</button>
-  <button onclick="taiVe()">📥 Tải về</button>
+  <button onclick="moCaiDat()">⚙️ Cài đặt</button>
 </div>
+<div class="tq" id="tq"></div>
 <div class="list" id="list"></div>
 
 <div class="fab2">
-  <button class="b-no"  onclick="moForm('no')">✚ Cho nợ</button>
-  <button class="b-tra" onclick="moForm('tra')">💰 Thu nợ</button>
+  <button class="b-no"  onclick="moForm('no')">✚ Ghi nợ</button>
+  <button class="b-tra" onclick="moForm('tra')">💰 Trả nợ</button>
 </div>
 
-<!-- form thêm -->
-<div class="ov" id="ovForm" onclick="if(event.target===this)dong()">
+<!-- form ghi -->
+<div class="ov" id="ov">
   <div class="sheet">
     <h2 id="fTitle">Cho nợ</h2>
-    <label>Ai?</label>
-    <input id="fTen" placeholder="Tên người nợ" autocomplete="off">
-    <div class="sug" id="fSug"></div>
-    <label>Số tiền</label>
-    <input id="fTien" type="number" inputmode="numeric" placeholder="500000">
-    <div class="sug">
-      <span onclick="dienTien(100000)">100k</span>
-      <span onclick="dienTien(200000)">200k</span>
-      <span onclick="dienTien(500000)">500k</span>
-      <span onclick="dienTien(1000000)">1tr</span>
-      <span onclick="dienTien(2000000)">2tr</span>
-      <span onclick="dienTien(5000000)">5tr</span>
+    <div><label>Tên người</label>
+      <input id="fTen" list="dsTen" placeholder="Ví dụ: chị Hai">
+      <datalist id="dsTen"></datalist></div>
+    <div id="wSdt"><label>Số điện thoại (không bắt buộc)</label>
+      <input id="fSdt" type="tel" inputmode="tel" placeholder="09xx…"></div>
+    <div><label>Số tiền (₫)</label>
+      <input id="fTien" type="number" inputmode="numeric"
+             placeholder="500000">
+      <div class="chips">
+        <button type="button" class="chip" onclick="chip(50000)">50k</button>
+        <button type="button" class="chip" onclick="chip(100000)">100k</button>
+        <button type="button" class="chip" onclick="chip(200000)">200k</button>
+        <button type="button" class="chip" onclick="chip(500000)">500k</button>
+        <button type="button" class="chip" onclick="chip(1000000)">1tr</button>
+        <button type="button" class="chip" onclick="chip(2000000)">2tr</button>
+        <button type="button" class="chip" onclick="chip(5000000)">5tr</button>
+        <button type="button" class="chip" onclick="chip(10000000)">10tr</button>
+        <button type="button" class="chip" onclick="chipTien()">×0</button>
+      </div></div>
+    <div id="wCn"><label>Khoản này là gì</label>
+      <div class="chips" id="cnChips" style="margin-top:0">
+        <button type="button" class="chip on" data-cn="gas"
+                onclick="cnChon(this)">⛽ Tiền gas</button>
+        <button type="button" class="chip" data-cn="tien"
+                onclick="cnChon(this)">💵 Tiền mặt</button>
+        <button type="button" class="chip" data-cn="khac"
+                onclick="cnChon(this)">🧺 Khác</button>
+      </div></div>
+    <div id="wLai"><label>Lãi suất %/tháng (không lấy lãi để 0)</label>
+      <input id="fLai" type="number" inputmode="decimal" step="0.5"
+             placeholder="0">
+      <div class="chips">
+        <button type="button" class="chip" onclick="laiChip(0)">Không lãi</button>
+        <button type="button" class="chip" onclick="laiChip(1)">1%</button>
+        <button type="button" class="chip" onclick="laiChip(1.5)">1.5%</button>
+        <button type="button" class="chip" onclick="laiChip(2)">2%</button>
+        <button type="button" class="chip" onclick="laiChip(3)">3%</button>
+      </div></div>
+    <div class="row">
+      <div><label>Ngày</label><input id="fNgay" type="date"></div>
+      <div id="wHan"><label>Hẹn trả (không bắt buộc)</label>
+        <input id="fHan" type="date">
+        <div class="chips">
+          <button type="button" class="chip" onclick="hanChip(1)">1 tháng</button>
+          <button type="button" class="chip" onclick="hanChip(3)">3 tháng</button>
+          <button type="button" class="chip" onclick="hanChip(6)">6 tháng</button>
+        </div></div>
     </div>
-    <label>Nội dung / ghi chú</label>
-    <input id="fGc" placeholder="VD: nợ tiền gạo, mượn tiền…">
-    <label>Ngày</label>
-    <input id="fNgay" type="date">
-    <div class="row2">
-      <button class="b-huy" onclick="dong()">Hủy</button>
-      <button class="b-save" onclick="luu()">💾 Lưu lại</button>
+    <div><label>Ghi chú</label>
+      <input id="fGc" placeholder="Vay làm gì, cầm cố gì…">
+      <div class="chips">
+        <button type="button" class="chip"
+                onclick="gcChip('thay bình gas 12kg')">thay bình gas</button>
+        <button type="button" class="chip"
+                onclick="gcChip('thay gas quán')">gas quán</button>
+        <button type="button" class="chip"
+                onclick="gcChip('2 bình gas')">2 bình</button>
+        <button type="button" class="chip"
+                onclick="gcChip('nợ tiền mặt')">tiền mặt</button>
+      </div></div>
+    <div class="btns">
+      <button class="b-xam" onclick="dong()">Hủy</button>
+      <button class="b-luu" onclick="luu()">Lưu</button>
     </div>
   </div>
 </div>
 
 <!-- chi tiết 1 người -->
-<div class="ov dt" id="ovDt" onclick="if(event.target===this)dong2()">
+<div class="ov" id="ovDt">
   <div class="sheet">
-    <h2 id="dTen"></h2>
-    <div style="font-size:15px">Còn nợ: <b id="dCon"
-        style="color:#b91c1c"></b> · Tổng đã vay: <span id="dVay"></span>
-        · Đã trả: <span id="dTra"></span></div>
-    <div class="ls" id="dLs"></div>
-    <div class="menurow">
-      <button class="b-back" onclick="dong2()">← Quay lại</button>
-      <button class="b-done" id="dDone" onclick="xongNo()">✓ Trả hết</button>
-      <button class="b-del2" onclick="xoaNguoi()">🗑 Xóa</button>
+    <h2><span id="dTen"></span>
+        <button style="border:0;background:none;font-size:18px"
+                onclick="doiTen()">✏️</button></h2>
+    <div class="dt-line" id="dSdt"></div>
+    <div class="dt-big" id="dCon"></div>
+    <div class="dt-line" id="dSub"></div>
+    <div class="dt-line" id="dQh"
+         style="color:#8b1a1a;font-weight:700"></div>
+    <div class="btns" style="margin-top:12px">
+      <button class="b-luu" style="background:#1a7f37"
+              onclick="thuNguoi()" id="dThu">💰 Trả nợ</button>
+      <button class="b-luu" style="background:#0a58ca"
+              onclick="xongNo()">✓ Trả hết</button>
+    </div>
+    <div class="btns">
+      <button class="b-xam" onclick="nhacNo()">📤 Gửi nhắc nợ</button>
+      <button class="b-xam" id="dGoi" onclick="goiNguoi()">📞 Gọi</button>
+      <button class="b-xam" style="color:#8b1a1a"
+              onclick="xoaNguoi()">🗑 Xóa</button>
+    </div>
+    <h2 style="margin-top:16px">Lịch sử</h2>
+    <div id="dList"></div>
+    <div class="btns">
+      <button class="b-xam" onclick="dong2()">Đóng</button>
     </div>
   </div>
 </div>
 
+<!-- cài đặt -->
+<div class="ov" id="ovSet">
+  <div class="sheet">
+    <h2>⚙️ Cài đặt</h2>
+    <div class="chips" style="flex-direction:column;align-items:stretch">
+      <button class="chip" style="text-align:left;padding:14px"
+              onclick="caiSync()">☁️ Đồng bộ Google Sheets…</button>
+      <button class="chip" style="text-align:left;padding:14px"
+              onclick="caiPin()">🔑 Đặt / đổi mã PIN mở app</button>
+      <button class="chip" style="text-align:left;padding:14px"
+              onclick="guiSo()">📤 Gửi cả sổ tổng hợp (Zalo)</button>
+      <button class="chip" style="text-align:left;padding:14px"
+              onclick="xuatJson()">⬇️ Tải file backup (khôi phục được)</button>
+      <button class="chip" style="text-align:left;padding:14px"
+              onclick="nhapJson()">📥 Nhập file backup</button>
+      <button class="chip" style="text-align:left;padding:14px"
+              onclick="xuatCSV()">📊 Xuất Excel (xem trên máy tính)</button>
+      <button class="chip" style="text-align:left;padding:14px"
+              onclick="napDemo()">🧪 Nạp dữ liệu mẫu (30 người nợ gas)</button>
+      <button class="chip" style="text-align:left;padding:14px;color:#8b1a1a"
+              onclick="xoaSach()">🗑 Xóa hết dữ liệu</button>
+    </div>
+    <div class="btns">
+      <button class="b-xam" onclick="dong3()">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<div class="pinov" id="pinov">
+  <div style="font-size:22px;font-weight:700">📒 Sổ Nợ</div>
+  <div class="dot" id="pindot"></div>
+  <div style="font-size:14px;opacity:.8">Nhập mã PIN</div>
+  <div class="pad" id="pad"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="fFile" accept=".json" style="display:none"
+       onchange="docJson(event)">
+
 <script>
-// ── dữ liệu: mảng giao dịch, lưu localStorage + hàng chờ sync ─
-const KEY = 'sono_v1', PKEY = 'sono_pending', SKEY = 'sono_sync_url';
+// ── dữ liệu ─────────────────────────────────────────────────
+const KEY = 'sono_v1', PKEY = 'sono_pending', SKEY = 'sono_sync_url',
+      PINK = 'sono_pin', PHK = 'sono_phones';
 let DB = [];
 try { DB = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) {}
-let PENDING = new Set(
-  JSON.parse(localStorage.getItem(PKEY) || '[]'));
+let PENDING = new Set(JSON.parse(localStorage.getItem(PKEY) || '[]'));
+let PHONES = {};
+try { PHONES = JSON.parse(localStorage.getItem(PHK) || '{}'); } catch (e) {}
 const save = () => {
   localStorage.setItem(KEY, JSON.stringify(DB));
   localStorage.setItem(PKEY, JSON.stringify([...PENDING]));
+  localStorage.setItem(PHK, JSON.stringify(PHONES));
   upSync(); trySync();
 };
 const pend = id => PENDING.add(id);
+const LIVE = () => DB.filter(t => !t.xoa);
 
-const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
+const fmt = n => Math.round(n).toLocaleString('vi-VN') + ' ₫';
+const fmtShort = n => n >= 1e6
+  ? (n / 1e6).toLocaleString('vi-VN', {maximumFractionDigits: 2}) + 'tr'
+  : fmt(n);
 const qEl = document.getElementById('q');
 const norm = s => (s || '').toLowerCase()
   .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
 const nkey = s => norm(s).replace(/\s+/g, '');
+const today = () => new Date().toISOString().slice(0, 10);
+const thisMonth = () => today().slice(0, 7);
+const d2v = d => d ? new Date(d + 'T12:00:00') : null;
+const dday = d => {
+  if (!d) return '';
+  const [y, m, x] = d.split('-');
+  return `${x}/${m}/${y}`;
+};
+const ICON = {gas: '⛽', tien: '💵', khac: '🧺'};
 let xemHetFlg = false;
 
-// xóa mềm: bản ghi đánh dấu xoa vẫn giữ trong DB để báo server,
-// nhưng không hiển thị
-const LIVE = () => DB.filter(t => !t.xoa);
+function toast(s) {
+  const t = document.getElementById('toast');
+  t.textContent = s; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(
+    () => t.style.display = 'none', 2200);
+}
 
-// gom theo người: {ten, vay, tra, items[]}
+// ── gom nhóm & tính toán ────────────────────────────────────
+// FIFO: tiền trả trừ vào khoản cũ trước
+function gocCon(items) {
+  const no = items.filter(t => t.loai === 'no')
+    .sort((a, b) => (a.ngay + a.gio).localeCompare(b.ngay + b.gio))
+    .map(t => ({t, con: t.tien}));
+  let tra = items.filter(t => t.loai === 'tra')
+    .reduce((s, t) => s + t.tien, 0);
+  for (const k of no) {
+    const tru = Math.min(k.con, tra);
+    k.con -= tru; tra -= tru;
+    if (tra <= 0) break;
+  }
+  return no;
+}
+function laiTichLuy(items) {
+  let s = 0;
+  const now = Date.now();
+  gocCon(items).forEach(({t, con}) => {
+    const lai = +t.lai || 0;
+    if (!con || !lai) return;
+    const ngay = d2v(t.ngay);
+    if (!ngay) return;
+    s += con * lai / 100 * ((now - ngay) / 30.44 / 864e5);
+  });
+  return s;
+}
 function nhom() {
   const m = {};
   LIVE().forEach(t => {
     const k = nkey(t.ten);
-    if (!m[k]) m[k] = {ten: t.ten, vay: 0, tra: 0, items: [], k};
+    if (!m[k]) m[k] = {ten: t.ten, vay: 0, tra: 0, items: [], k,
+                       sdt: '', han: '', cn: ''};
     m[k].items.push(t);
     if (t.loai === 'no') m[k].vay += t.tien; else m[k].tra += t.tien;
+    if (t.sdt) m[k].sdt = t.sdt;
+    if (t.loai === 'no' && t.han) m[k].han = t.han;
+    if (t.cn) m[k].cn = t.cn;
     m[k].last = t.ngay + ' ' + (t.gio || '');
   });
-  Object.values(m).forEach(p => {
+  const out = Object.values(m);
+  out.forEach(p => {
+    if (PHONES[p.k] && !p.sdt) p.sdt = PHONES[p.k];
     p.con = p.vay - p.tra;
-    p.items.sort((a, b) => (b.ngay + b.gio).localeCompare(a.ngay + a.gio));
+    p.lai = laiTichLuy(p.items);
+    p.qh = (p.con > 0 && p.han && p.han < today())
+      ? Math.round((d2v(today()) - d2v(p.han)) / 864e5) : 0;
+    p.items.sort((a, b) =>
+      (b.ngay + b.gio).localeCompare(a.ngay + a.gio));
   });
-  return Object.values(m)
-    .sort((a, b) => (b.con - a.con) || a.ten.localeCompare(b.ten));
+  const sx = document.getElementById('sx').value;
+  const cmp = {
+    qh:  (a, b) => (b.qh - a.qh) || (b.con - a.con),
+    con: (a, b) => (b.con - a.con),
+    new: (a, b) => b.last.localeCompare(a.last),
+    ten: (a, b) => a.ten.localeCompare(b.ten, 'vi'),
+  }[sx] || ((a, b) => b.con - a.con);
+  return out.sort(cmp);
 }
 
+// ── bảng tổng quan ──────────────────────────────────────────
+function tqHien() {
+  const el = document.getElementById('tq');
+  if (el.classList.toggle('on')) { el.classList.remove('on'); return; }
+  const all = nhom();
+  const no = all.filter(p => p.con > 0);
+  const tong = no.reduce((s, p) => s + p.con, 0);
+  const lai = no.reduce((s, p) => s + p.lai, 0);
+  const qh = no.filter(p => p.qh);
+  const tx = LIVE();
+  const hnNo = tx.filter(t => t.loai === 'no' && t.ngay === today())
+    .reduce((s, t) => s + t.tien, 0);
+  const hnTra = tx.filter(t => t.loai === 'tra' && t.ngay === today())
+    .reduce((s, t) => s + t.tien, 0);
+  const thNo = tx.filter(t => t.loai === 'no'
+    && t.ngay.startsWith(thisMonth())).reduce((s, t) => s + t.tien, 0);
+  const thTra = tx.filter(t => t.loai === 'tra'
+    && t.ngay.startsWith(thisMonth())).reduce((s, t) => s + t.tien, 0);
+  const top = no.slice().sort((a, b) => b.con - a.con).slice(0, 3)
+    .map(p => `${p.ten} ${fmtShort(p.con)}`).join(' • ');
+  el.innerHTML = `<h3>📊 Tổng quan</h3>
+    <div class="r"><span>Tổng đang nợ</span><b>${fmt(tong)}</b></div>
+    <div class="r"><span>Số người đang nợ</span><b>${no.length}</b></div>
+    <div class="r"><span>Khoản quá hạn</span>
+      <b style="color:#8b1a1a">${qh.length}</b></div>
+    <div class="r"><span>Lãi tạm tính cả sổ</span><b>~${fmt(lai)}</b></div>
+    <div class="r"><span>Hôm nay: ghi nợ / thu</span>
+      <b>${fmtShort(hnNo)} / ${fmtShort(hnTra)}</b></div>
+    <div class="r"><span>Tháng này: ghi nợ / thu</span>
+      <b>${fmtShort(thNo)} / ${fmtShort(thTra)}</b></div>
+    <div class="top">🔝 Nợ nhiều: ${top || '—'}</div>`;
+}
+
+// ── hiển thị ────────────────────────────────────────────────
 function render() {
   const all = nhom();
   const q = norm(qEl.value);
@@ -199,116 +434,200 @@ function render() {
                   && (!q || norm(p.ten).includes(q)));
   const tong = all.reduce((s, p) => s + Math.max(0, p.con), 0);
   const nguoi = all.filter(p => p.con > 0).length;
+  const nqh = all.filter(p => p.qh > 0).length;
   document.getElementById('tong').textContent = fmt(tong);
   document.getElementById('nguoi').textContent = nguoi;
+  document.getElementById('qhan').innerHTML = nqh
+    ? `<span class="qhan">⚠ ${nqh} khoản quá hạn</span>` : '';
   document.getElementById('bHet').textContent = xemHetFlg
     ? '📋 Chỉ xem đang nợ' : '📋 Xem cả đã trả hết';
+  document.getElementById('dsTen').innerHTML = all
+    .map(p => `<option value="${p.ten}">`).join('');
   const el = document.getElementById('list');
   if (!l.length) {
     el.innerHTML = '<div class="empty">Chưa có khoản nợ nào.<br>'
-      + 'Bấm <b>✚ Cho nợ</b> bên dưới để bắt đầu.</div>';
+      + 'Bấm nút bên dưới để bắt đầu ghi.</div>';
     return;
   }
-  el.innerHTML = l.map(p => `
-    <div class="card ${p.con <= 0 ? 'done' : ''}" onclick="moDt('${p.k}')">
-      <div>
-        <div class="name">${esc(p.ten)}</div>
-        <div class="sub">${p.items.length} lần · gần nhất
-          ${esc((p.last || '').slice(0, 10))}</div>
-      </div>
-      <div class="amt">${p.con > 0 ? fmt(p.con) : '✓ hết'}</div>
-    </div>`).join('');
+  el.innerHTML = l.map(p => {
+    const meta = [`vay ${fmtShort(p.vay)}`];
+    if (p.tra) meta.push(`trả ${fmtShort(p.tra)}`);
+    if (p.lai > 50) meta.push(`lãi ~${fmtShort(p.lai)}`);
+    if (p.han && p.con > 0) meta.push(`hẹn ${dday(p.han)}`);
+    meta.push(`cập nhật ${dday(p.last.slice(0, 10))}`);
+    const badge = p.con <= 0
+      ? '<span class="badge b-ok">ĐÃ TRẢ HẾT</span>'
+      : p.qh ? `<span class="badge b-qh">QUÁ HẠN ${p.qh} ngày</span>`
+             : (p.lai > 50 ? '<span class="badge b-lai">CÓ LÃI</span>' : '');
+    return `<div class="card" onclick="moDt('${p.k}')">
+      <div class="n">${ICON[p.cn] || '📒'} ${p.ten}${p.sdt ? ` <span class="sdt">📞${p.sdt}</span>` : ''} ${badge}</div>
+      <div class="c">${p.con > 0 ? fmt(p.con) : '0 ₫'}</div>
+      <div class="meta">${meta.join(' • ')}</div>
+    </div>`;
+  }).join('');
+  if (document.getElementById('tq').classList.contains('on'))
+    tqHien(), document.getElementById('tq').classList.add('on');
 }
 
-const esc = s => String(s ?? '').replace(/[&<>"]/g,
-  c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
-
-// ── form ─────────────────────────────────────────────────────
-let LOAI = 'no', CUR = null;
-function moForm(loai) {
+// ── form ghi ────────────────────────────────────────────────
+let LOAI = 'no', FCN = 'gas';
+function cnChon(btn) {
+  FCN = btn.dataset.cn;
+  [...document.getElementById('cnChips').children]
+    .forEach(b => b.classList.toggle('on', b === btn));
+}
+function moForm(loai, ten) {
   LOAI = loai;
   document.getElementById('fTitle').textContent =
-    loai === 'no' ? '✚ Cho nợ (họ nợ mình)' : '💰 Thu nợ (họ trả)';
-  const f = document.getElementById('fNgay');
-  f.value = new Date().toISOString().slice(0, 10);
-  // gợi ý tên cũ
-  const sug = nhom().map(p => p.ten);
-  document.getElementById('fSug').innerHTML = sug.map(t =>
-    `<span onclick="document.getElementById('fTen').value='${esc(t)}'">
-       ${esc(t)}</span>`).join('');
-  document.getElementById('ovForm').classList.add('on');
-  setTimeout(() => document.getElementById('fTen').focus(), 60);
+    loai === 'no' ? '✚ Ghi nợ' : '💰 Trả nợ';
+  document.getElementById('wLai').style.display =
+    loai === 'no' ? '' : 'none';
+  document.getElementById('wHan').style.display =
+    loai === 'no' ? '' : 'none';
+  document.getElementById('wSdt').style.display =
+    loai === 'no' ? '' : 'none';
+  document.getElementById('wCn').style.display =
+    loai === 'no' ? '' : 'none';
+  ['fTen', 'fSdt', 'fGc'].forEach(i =>
+    document.getElementById(i).value = '');
+  document.getElementById('fTien').value = '';
+  document.getElementById('fLai').value = '';
+  document.getElementById('fHan').value = '';
+  document.getElementById('fNgay').value = today();
+  if (ten) {
+    document.getElementById('fTen').value = ten;
+    const p = nhom().find(x => nkey(x.ten) === nkey(ten));
+    if (p && p.sdt) document.getElementById('fSdt').value = p.sdt;
+  }
+  document.getElementById('ov').classList.add('on');
 }
-function dienTien(n) {
-  const f = document.getElementById('fTien');
-  f.value = (parseInt(f.value) || 0) + n;
+function dong() { document.getElementById('ov').classList.remove('on'); }
+function chip(n) {
+  const el = document.getElementById('fTien');
+  el.value = (parseInt(el.value) || 0) + n;
 }
-function dong() {
-  document.getElementById('ovForm').classList.remove('on');
-  ['fTen', 'fTien', 'fGc'].forEach(id =>
-    document.getElementById(id).value = '');
+function chipTien() { document.getElementById('fTien').value = ''; }
+function laiChip(n) { document.getElementById('fLai').value = n; }
+function hanChip(thang) {
+  const d = new Date();
+  d.setMonth(d.getMonth() + thang);
+  document.getElementById('fHan').value = d.toISOString().slice(0, 10);
 }
+function gcChip(s) { document.getElementById('fGc').value = s; }
 function luu() {
   const ten = document.getElementById('fTen').value.trim();
   const tien = parseInt(document.getElementById('fTien').value) || 0;
   if (!ten || tien <= 0) { alert('Nhập tên và số tiền nhé!'); return; }
   const now = new Date();
   const id = Date.now();
-  DB.push({
-    id,
-    ten, tien,
+  const t = {
+    id, ten, tien,
     loai: LOAI,
     gc: document.getElementById('fGc').value.trim(),
     ngay: document.getElementById('fNgay').value
           || now.toISOString().slice(0, 10),
     gio: now.toTimeString().slice(0, 5),
-  });
-  pend(id); save(); dong(); render();
+  };
+  if (LOAI === 'no') {
+    t.cn = FCN;
+    const lai = parseFloat(document.getElementById('fLai').value);
+    if (lai > 0) t.lai = lai;
+    const han = document.getElementById('fHan').value;
+    if (han) t.han = han;
+    const sdt = document.getElementById('fSdt').value.trim();
+    if (sdt) { t.sdt = sdt; PHONES[nkey(ten)] = sdt; }
+  }
+  DB.push(t); pend(id); save(); dong(); render();
+  toast(`Đã ghi: ${ten} ${LOAI === 'no' ? 'nợ' : 'trả'} ${fmt(tien)}`);
 }
 
-// ── chi tiết 1 người ─────────────────────────────────────────
+// ── chi tiết người ──────────────────────────────────────────
+let CUR = '';
 function moDt(k) {
   CUR = k;
   const p = nhom().find(x => x.k === k);
   if (!p) return;
   document.getElementById('dTen').textContent = p.ten;
+  document.getElementById('dSdt').textContent = p.sdt ? '📞 ' + p.sdt : '';
   document.getElementById('dCon').textContent = fmt(Math.max(0, p.con));
-  document.getElementById('dVay').textContent = fmt(p.vay);
-  document.getElementById('dTra').textContent = fmt(p.tra);
-  document.getElementById('dDone').style.display = p.con > 0 ? '' : 'none';
-  document.getElementById('dLs').innerHTML = p.items.map(t => `
-    <div class="it">
-      <div>${t.loai === 'no'
-          ? '<span class="no">− ' + fmt(t.tien) + '</span> <span class="mt">cho nợ</span>'
-          : '<span class="tra">+ ' + fmt(t.tien) + '</span> <span class="mt">trả</span>'}
-        ${t.gc ? '<div class="mt">' + esc(t.gc) + '</div>' : ''}
-        <div class="mt">${esc(t.ngay)} ${esc(t.gio || '')}</div>
-      </div>
-      <div><button onclick="xoaGd(${t.id})" style="border:0;background:none;
-          color:#dc2626;font-size:16px">✕</button></div>
-    </div>`).join('') || '<div class="empty">Chưa có giao dịch</div>';
+  document.getElementById('dSub').textContent =
+    `Đã vay ${fmt(p.vay)} • đã trả ${fmt(p.tra)}`
+    + (p.lai > 50 ? ` • lãi tạm tính ~${fmt(p.lai)}` : '');
+  document.getElementById('dQh').textContent =
+    p.qh ? `⚠ QUÁ HẠN ${p.qh} ngày (hẹn ${dday(p.han)})` : '';
+  document.getElementById('dGoi').style.display = p.sdt ? '' : 'none';
+  document.getElementById('dList').innerHTML = p.items.map(t =>
+    `<div class="tx"><div>
+      <div class="m ${t.loai}">${t.loai === 'no' ? '–' : '+'}${fmt(t.tien)}</div>
+      <small>${dday(t.ngay)} ${t.gio || ''}`
+      + `${t.cn ? ' ' + (ICON[t.cn] || '') : ''}`
+      + `${t.lai ? ` • lãi ${t.lai}%/th` : ''}`
+      + `${t.han ? ` • hẹn ${dday(t.han)}` : ''}`
+      + `${t.gc ? ' • ' + t.gc : ''}</small>
+    </div><div class="ops">
+      <button onclick="suaGd(${t.id})">✏️</button>
+      <button onclick="xoaGd(${t.id})">🗑</button>
+    </div></div>`).join('') || '<div class="empty">Chưa có giao dịch</div>';
   document.getElementById('ovDt').classList.add('on');
 }
 function dong2() { document.getElementById('ovDt').classList.remove('on'); }
-function xoaGd(id) {
-  if (!confirm('Xóa giao dịch này?')) return;
-  const t = DB.find(x => x.id === id);
-  DB = DB.filter(x => x.id !== id);
-  if (t) {
-    t.xoa = 1; DB.push(t); pend(t.id);   // báo server xóa luôn
-  }
-  save(); moDt(CUR); render();
+function thuNguoi() {
+  const p = nhom().find(x => x.k === CUR);
+  dong2(); moForm('tra', p ? p.ten : '');
+}
+function goiNguoi() {
+  const p = nhom().find(x => x.k === CUR);
+  if (p && p.sdt) location.href = 'tel:' + p.sdt;
+}
+function doiTen() {
+  const p = nhom().find(x => x.k === CUR);
+  if (!p) return;
+  const t = prompt('Đổi tên:', p.ten);
+  if (!t || !t.trim() || t.trim() === p.ten) return;
+  DB.forEach(x => {
+    if (nkey(x.ten) === CUR) { x.ten = t.trim(); pend(x.id); }
+  });
+  const oldK = CUR, newK = nkey(t);
+  if (PHONES[oldK]) { PHONES[newK] = PHONES[oldK]; delete PHONES[oldK]; }
+  save(); moDt(newK); render();
+}
+function nhacNo() {
+  const p = nhom().find(x => x.k === CUR);
+  if (!p) return;
+  const txt =
+    `📒 NHẮC NỢ — ${p.ten}\n`
+    + `Còn nợ: ${fmt(Math.max(0, p.con))}`
+    + (p.lai > 50 ? ` (lãi ~${fmt(p.lai)})` : '') + '\n'
+    + (p.qh ? `⚠ Đã quá hạn ${p.qh} ngày (hẹn ${dday(p.han)})\n` : '')
+    + `Vay ${fmt(p.vay)} • đã trả ${fmt(p.tra)}`;
+  if (navigator.share) navigator.share({text: txt}).catch(() => {});
+  else navigator.clipboard.writeText(txt)
+    .then(() => toast('Đã chép lời nhắc — dán vào Zalo gửi đi'));
+}
+function guiSo() {
+  const all = nhom().filter(p => p.con > 0)
+    .sort((a, b) => b.con - a.con);
+  const tong = all.reduce((s, p) => s + p.con, 0);
+  const txt = `📒 SỔ NỢ — ${dday(today())}\n`
+    + `Tổng đang nợ: ${fmt(tong)} (${all.length} người)\n`
+    + all.map(p => `- ${p.ten}: ${fmt(p.con)}`
+        + (p.qh ? ` ⚠quá hạn ${p.qh}n` : '')).join('\n');
+  if (navigator.share) navigator.share({text: txt}).catch(() => {});
+  else navigator.clipboard.writeText(txt)
+    .then(() => toast('Đã chép tổng sổ — dán vào Zalo'));
 }
 function xongNo() {
   const p = nhom().find(x => x.k === CUR);
   if (!p || p.con <= 0) return;
-  if (!confirm(`Ghi \"${p.ten} trả hết ${fmt(p.con)}\"?`)) return;
+  if (!confirm(`Ghi "${p.ten} trả hết ${fmt(p.con)}"?`)) return;
   const now = new Date();
   const id = Date.now();
-  DB.push({id, ten: p.ten, tien: p.con, loai: 'tra',
-           gc: 'trả hết nợ', ngay: now.toISOString().slice(0, 10),
-           gio: now.toTimeString().slice(0, 5)});
+  const t = {id, ten: p.ten, tien: p.con, loai: 'tra',
+             gc: 'trả hết nợ', ngay: today(),
+             gio: now.toTimeString().slice(0, 5)};
+  DB.push(t);
   pend(id); save(); dong2(); render();
+  toast(`Đã ghi trả hết ${fmt(p.con)}`);
 }
 function xoaNguoi() {
   const p = nhom().find(x => x.k === CUR);
@@ -318,38 +637,212 @@ function xoaNguoi() {
   DB.forEach(t => {
     if (nkey(t.ten) === CUR) { t.xoa = 1; pend(t.id); }
   });
-  save(); dong2(); render();
+  save(); dong2(); render(); toast('Đã xóa');
+}
+function suaGd(id) {
+  const t = DB.find(x => x.id === id);
+  if (!t) return;
+  const tien = prompt('Số tiền mới:', t.tien);
+  if (tien === null) return;
+  const n = parseInt(tien);
+  if (!n || n <= 0) { alert('Số tiền không hợp lệ'); return; }
+  const gc = prompt('Ghi chú:', t.gc || '');
+  if (gc === null) return;
+  t.tien = n; t.gc = gc.trim();
+  pend(id); save(); moDt(CUR); render();
+}
+function xoaGd(id) {
+  if (!confirm('Xóa giao dịch này?')) return;
+  const t = DB.find(x => x.id === id);
+  if (t) { t.xoa = 1; pend(t.id); }
+  save(); moDt(CUR); render();
+}
+function xoaSach() {
+  if (!confirm('XÓA HẾT TOÀN BỘ sổ nợ? Nên tải file backup trước!'))
+    return;
+  if (!confirm('Chắc chắn chưa? Xóa là mất hết!')) return;
+  DB.forEach(t => { t.xoa = 1; pend(t.id); });
+  save(); render(); dong3(); toast('Đã xóa sạch');
 }
 
-// ── công cụ ──────────────────────────────────────────────────
+// ── cài đặt ─────────────────────────────────────────────────
+function moCaiDat() { document.getElementById('ovSet').classList.add('on'); }
+function dong3() { document.getElementById('ovSet').classList.remove('on'); }
 function xemHet() { xemHetFlg = !xemHetFlg; render(); }
+
+function xuatJson() {
+  const blob = new Blob([JSON.stringify(
+    {db: DB, phones: PHONES}, null, 1)],
+    {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'so_no_backup_'
+    + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  toast('Đã tải file backup — giữ kỹ nhé');
+}
+function nhapJson() { document.getElementById('fFile').click(); }
+function docJson(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const j = JSON.parse(rd.result);
+      const rows = j.db || j;
+      if (!Array.isArray(rows)) throw 0;
+      const byId = new Map(DB.map(t => [t.id, t]));
+      let n = 0;
+      rows.forEach(t => {
+        if (!t.id) t.id = Date.now() + n;
+        if (!byId.has(t.id)) { DB.push(t); pend(t.id); n++; }
+      });
+      if (j.phones) Object.assign(PHONES, j.phones);
+      save(); render();
+      toast(`Đã nhập ${n} ghi từ file backup`);
+      dong3();
+    } catch (x) { alert('File không đúng — chọn file backup của Sổ Nợ'); }
+  };
+  rd.readAsText(f);
+  e.target.value = '';
+}
+// dữ liệu mẫu
+function napDemo() {
+  if (!confirm('Nạp 30 người nợ tiền gas làm dữ liệu mẫu?')) return;
+  const names = ['chị Hai','anh Ba','cô Tư','chú Năm','bà Sáu',
+    'cậu Bảy','dì Tám','anh Chín','chị Mười','bác Ba Sơn','anh Tý',
+    'cô Út','chú Lợi','chị Hồng','anh Tâm','bà Ngoại Sáng','cô Lan',
+    'anh Dũng','chị Thảo','chú Sáu Cờ','anh Vũ','cô Phượng',
+    'bà Tư Đẹp','anh Kha','dì Sen','chú Hoành','chị Ngọc','anh Lực',
+    'cô Gái','bác Năm Búng'];
+  const gc = ['thay bình gas 12kg','thay gas','gas bếp',
+    'thay bình gas quán','2 bình gas','gas + tiền lắp',
+    'thay gas tháng này','nợ gas','thay bình gas mới','gas và công thay'];
+  const gia = [380000, 390000, 400000, 410000, 420000, 450000];
+  const sdtf = i => '09' + String(10000000 + i * 731).slice(0, 8);
+  const R = () => Math.random();
+  const now = Date.now();
+  const iso = d => new Date(d).toISOString().slice(0, 10);
+  const day = 864e5;
+  let n = 0;
+  names.forEach((ten, i) => {
+    let ngay = now - (20 + Math.floor(R() * 85)) * day;
+    const sdt = R() < .6 ? sdtf(i) : '';
+    const lan = R() < .7 ? 1 : (R() < .75 ? 2 : 3);
+    let tongVay = 0;
+    for (let L = 0; L < lan; L++) {
+      const tien = gia[Math.floor(R() * gia.length)]
+        * (R() < .15 ? 2 : 1);
+      const id = now + i * 10 + L;
+      const t = {id, ten, tien, loai: 'no', cn: 'gas',
+        gc: gc[Math.floor(R() * gc.length)],
+        ngay: iso(ngay),
+        gio: String(7 + Math.floor(R() * 12)).padStart(2, '0')
+             + ':' + String(Math.floor(R() * 60)).padStart(2, '0')};
+      if (R() < .4) t.han = iso(ngay + 30 * day);
+      if (sdt) t.sdt = sdt;
+      DB.push(t); pend(id); tongVay += tien; n++;
+      ngay += (15 + Math.floor(R() * 25)) * day;
+      if (ngay > now) ngay = now - Math.floor(R() * 5) * day;
+    }
+    const r = R();
+    if (r < .2) {
+      const id = now + i * 10 + 8;
+      DB.push({id, ten, tien: tongVay, loai: 'tra',
+               gc: 'trả tiền gas',
+               ngay: iso(Math.min(ngay + 5 * day, now)), gio: '18:00'});
+      pend(id); n++;
+    } else if (r < .5) {
+      const id = now + i * 10 + 8;
+      DB.push({id, ten,
+               tien: Math.round(tongVay * (.3 + R() * .3) / 1e4) * 1e4,
+               loai: 'tra', gc: 'trả bớt tiền gas',
+               ngay: iso(ngay), gio: '17:30'});
+      pend(id); n++;
+    }
+    if (sdt) PHONES[nkey(ten)] = sdt;
+  });
+  save(); render(); dong3();
+  toast(`Đã nạp ${n} giao dịch mẫu — xem thử nhé`);
+}
+// CSV cho Excel
 function xuatCSV() {
-  const rows = [['Ngày', 'Giờ', 'Tên', 'Loại', 'Số tiền', 'Ghi chú']]
-    .concat(LIVE().map(t => [t.ngay, t.gio, t.ten,
-      t.loai === 'no' ? 'cho nợ' : 'trả', t.tien, t.gc || '']));
+  const rows = [['Ngày', 'Giờ', 'Tên', 'SĐT', 'Chiều', 'Loại', 'Nhóm',
+                 'Số tiền', 'Lãi %/th', 'Hẹn trả', 'Ghi chú']]
+    .concat(LIVE().map(t => [t.ngay, t.gio, t.ten, t.sdt || '',
+      t.md ? 'tôi nợ' : 'họ nợ',
+      t.loai === 'no' ? 'cho nợ' : 'trả', t.cn || '',
+      t.tien, t.lai || '', t.han || '', t.gc || '']));
   const csv = '﻿' + rows.map(r =>
     r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(','))
     .join('\n');
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],
-    {type: 'text/csv;charset=utf-8'}));
+  a.href = URL.createObjectURL(
+    new Blob([csv], {type: 'text/csv'}));
   a.download = 'so_no_' + new Date().toISOString().slice(0, 10) + '.csv';
   a.click();
 }
 
-// ── đồng bộ Google Sheets (Apps Script) ─────────────────────
+// ── PIN ─────────────────────────────────────────────────────
+const pin = () => localStorage.getItem(PINK) || '';
+function caiPin() {
+  const cur = pin();
+  const p1 = prompt(cur ? 'Đổi mã PIN mới (4 số) — để trống giữ nguyên, gõ 0 để tắt PIN:'
+                        : 'Đặt mã PIN 4 số để khóa app:');
+  if (p1 === null || p1 === '') return;
+  if (p1 === '0') {
+    localStorage.removeItem(PINK);
+    document.getElementById('bLock').style.display = 'none';
+    toast('Đã tắt PIN'); return;
+  }
+  if (!/^\d{4}$/.test(p1)) { alert('PIN phải đúng 4 chữ số'); return; }
+  localStorage.setItem(PINK, p1);
+  document.getElementById('bLock').style.display = '';
+  toast('Đã đặt PIN — lần sau mở app sẽ hỏi');
+}
+function khoaLai() { if (pin()) hoiPin(); }
+let pinNhap = '';
+function hoiPin() {
+  pinNhap = ''; pinVe();
+  document.getElementById('pinov').classList.add('on');
+}
+function pinVe() {
+  document.getElementById('pindot').textContent =
+    '●'.repeat(pinNhap.length) + '○'.repeat(4 - pinNhap.length);
+}
+(function padInit() {
+  const pad = document.getElementById('pad');
+  '123456789 0⌫'.split('').forEach(c => {
+    if (c === ' ') { pad.appendChild(document.createElement('div')); return; }
+    const b = document.createElement('button');
+    b.textContent = c;
+    b.onclick = () => {
+      if (c === '⌫') pinNhap = pinNhap.slice(0, -1);
+      else if (pinNhap.length < 4) pinNhap += c;
+      pinVe();
+      if (pinNhap.length === 4) {
+        if (pinNhap === pin())
+          document.getElementById('pinov').classList.remove('on');
+        else { pinNhap = ''; pinVe(); toast('Sai PIN — thử lại'); }
+      }
+    };
+    pad.appendChild(b);
+  });
+})();
+if (pin()) { hoiPin(); document.getElementById('bLock').style.display = ''; }
+
+// ── đồng bộ Google Sheets ───────────────────────────────────
 const syncUrl = () => localStorage.getItem(SKEY) || '';
 function caiSync() {
-  const cur = syncUrl();
   const u = prompt(
-    'Dán link Apps Script đồng bộ (lấy từ Google Sheets của mẹ):',
-    cur);
+    'Dán link Apps Script đồng bộ (từ Google Sheets của mẹ):',
+    syncUrl());
   if (u === null) return;
   localStorage.setItem(SKEY, u.trim());
-  PENDING = new Set(DB.map(t => t.id));   // đẩy toàn bộ lên lần đầu
+  PENDING = new Set(DB.map(t => t.id));
   save(); trySync();
+  toast('Đã cài đồng bộ — dữ liệu đang đẩy lên Sheet');
 }
-
 async function trySync() {
   const u = syncUrl();
   if (!u || !navigator.onLine || !PENDING.size) { upSync(); return; }
@@ -363,45 +856,45 @@ async function trySync() {
     });
     rows.forEach(t => PENDING.delete(t.id));
     localStorage.setItem(PKEY, JSON.stringify([...PENDING]));
-  } catch (e) { /* mạng lỗi — giữ hàng chờ, lần sau gửi lại */ }
+  } catch (e) { /* giữ hàng chờ */ }
   upSync();
 }
-
-async function taiVe() {
-  // kéo dữ liệu trên Sheet về (dùng khi cài máy mới / mất dữ liệu)
+async function pullSync(bao) {
   const u = syncUrl();
-  if (!u) { alert('Chưa cài link đồng bộ — bấm ⚙️ Đồng bộ trước');
-            return; }
+  if (!u || !navigator.onLine) { if (bao) alert('Chưa cài đồng bộ'); return; }
   try {
     const r = await fetch(u + '?all=1');
     const j = await r.json();
     const byId = new Map(DB.map(t => [t.id, t]));
-    let n = 0;
+    let doi = 0;
     (j.rows || []).forEach(t => {
-      if (!byId.has(t.id)) { DB.push(t); n++; }
+      const cu = byId.get(t.id);
+      if (!cu) { DB.push(t); doi++; }
+      else if (!PENDING.has(t.id)
+               && JSON.stringify(cu) !== JSON.stringify(t)) {
+        Object.assign(cu, t); doi++;
+      }
     });
-    save(); render();
-    alert(n ? 'Đã tải ' + n + ' ghi từ Sheet về.'
-            : 'Không có ghi mới nào trên Sheet.');
-  } catch (e) { alert('Không tải được — kiểm tra mạng/link.'); }
+    if (doi) { save(); render(); }
+    if (bao) toast(doi ? 'Đã tải ' + doi + ' ghi từ Sheet về.'
+                       : 'Sheet không có ghi mới.');
+  } catch (e) { if (bao) alert('Không tải được — kiểm tra mạng/link.'); }
 }
-
-// trạng thái mạng + đồng bộ
 function upSync() {
   const el = document.getElementById('sync');
-  if (!navigator.onLine) {
+  if (!navigator.onLine)
     el.textContent = '💾 Lưu trên máy — đang MẤT MẠNG, vẫn ghi được';
-  } else if (!syncUrl()) {
+  else if (!syncUrl())
     el.textContent = '💾 Lưu trên máy — chưa cài đồng bộ';
-  } else {
+  else
     el.textContent = PENDING.size
       ? '⏳ ' + PENDING.size + ' mục đang chờ đồng bộ…'
       : '☁️ Đã đồng bộ lên Google Sheets';
-  }
 }
-window.addEventListener('online', () => { upSync(); trySync(); });
+window.addEventListener('online',
+  () => { upSync(); trySync(); pullSync(); });
 window.addEventListener('offline', upSync);
-upSync(); trySync(); render();
+upSync(); trySync(); pullSync(); render();
 
 // PWA offline
 if ('serviceWorker' in navigator)
